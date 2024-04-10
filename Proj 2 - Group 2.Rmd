@@ -1,0 +1,418 @@
+---
+title: "Project #2 - Univariate and Bivariate Analysis - Group 2 - Danielle"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  word_document: default
+---
+
+**Danielle do Val Goncalves Tudeia** - Student ID: 0823569
+
+**Fernanda Barbieri de Camargo** - Student ID: 0825882
+
+"We, Danielle do Val Goncalves Tudeia, and Fernanda Barbieri de Camargo, hereby state that we have not communicated with or gained information in any way from any person or resource that would violate the College's academic integrity policies, and that all work presented is our own. In addition, we also agree not to share our work in any way, before or after submission, that would violate the College's academic integrity policies"
+
+***\# R Version***
+
+RStudio 2023.03.0+386 "Cherry Blossom" Release (3c53477afb13ab959aeb5b34df1f10c237b256c3, 2023-03-09) for Windows
+
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) RStudio/2023.03.0+386 Chrome/108.0.5359.179 Electron/22.0.3 Safari/537.36
+
+***\# Import the tidyverse package because contains the ggplot2 used on data visualization***
+
+```{r}
+library(tidyverse)
+```
+
+***\# Check the tidyverse package version***
+
+```{r}
+packageVersion("tidyverse")
+```
+
+***\# Import the formattable package to create the pie chart. Source:<https://statisticsglobe.com/format-number-as-percentage-in-r>***
+
+```{r}
+library("formattable")
+```
+
+***\# Information about the dataset used in this project***
+
+[Name of data set:]{.underline} [Suicide Rates Overview 1985 to 2016](https://www.kaggle.com/datasets/russellyates88/suicide-rates-overview-1985-to-2016)
+
+[Platform:]{.underline} Kaggle
+
+[Creator's username:]{.underline} [Rusty](https://www.kaggle.com/russellyates88)
+
+These data set is licensed by World Bank Dataset.
+
+[Data set file's name]{.underline}: master.csv
+
+***\# Changes done in the dataset before load it to R Studio***
+
+The column ' I ' was almost totally empty so we removed it before load the file to R Studio. Now, there are 27,821 observations and 11 features on the dataset.
+
+***\# Load the dataset's file to R Studio using the read.csv***
+
+```{r}
+suic = read.csv("C:/Users/Danielle/Documents/master.csv")
+```
+
+***\# Check the tibble information such as features, data type, etc.***
+
+```{r}
+glimpse(suic)
+```
+
+```{r}
+summary(suic)
+```
+
+***\# Renaming the features***
+
+```{r}
+suic <- suic %>% 
+  rename(gpd_for_year = gdp_for_year....)
+```
+
+```{r}
+suic <- suic %>% 
+  rename(gdp_per_capita = gdp_per_capita....)
+```
+
+***\# Adjust the data on feature "Age", transforming "years" to "yrs" it will help the plot to be more "readable"***
+
+```{r}
+suic$age <- gsub("years", "yrs", suic$age)
+```
+
+***\# Checking the values of population and suicide number for year to define the interval I'll use for the analysis***
+
+```{r}
+suic %>% 
+  group_by(year) %>% 
+  summarise(num_pop = sum(population)/1000) %>% 
+  ggplot()+
+  geom_col (aes(x=year, y=num_pop),
+           color='black')+
+  labs(x = 'Year') +
+  labs(y = 'Population (x1000') +
+  theme_bw()
+
+```
+
+```{r}
+suic %>% 
+  group_by(year) %>% 
+  summarise(num_suic = sum(suicides_no)/1000) %>% 
+  ggplot()+
+  geom_col (aes(x=year, y=num_suic),
+           color='black')+
+  labs(x = 'Year') +
+  labs(y = 'Suicides Number (x1000')+
+  theme_bw()
+```
+
+***\# Removing 2016 because is not complete and selecting 10 years of interval, from 2006 to 2015 - now we have 9840 observations***
+
+```{r}
+suic_yr <- suic %>% 
+  filter(year >= '2006' & year <= '2015')
+```
+
+***\# Removing the observations where the suicides_no is zero - now we have 8320 observations***
+
+```{r}
+suic_yr <- suic_yr %>% 
+  filter(suicides_no != 0)
+```
+
+***\# Checking the information of the just created subset***
+
+```{r}
+summary(suic_yr)
+```
+
+***\#*** [**Univariate Analysis - Numeric Variable** - **Feature "suicides.100k.pop"**]{.underline}
+
+**\# 1 - *Create an appropriate plot to visualize the distribution of this variable***
+
+*\# Use ggplot to create a histogram: 'Distribution of Suicide Rate'*
+
+```{r}
+suic_yr %>% 
+  ggplot(aes(x = suicides.100k.pop)) +
+  geom_histogram(fill = 'pink',
+                 colour = 'black')+
+  labs(x = 'Suicides (per 100k Population)') +
+  labs(y = 'Count') +
+  stat_bin(geom='text',
+           color='black',
+           size=2,
+           aes(label=after_stat(count)),
+           vjust=-1.1)+
+  ggtitle('Worldwide Distribution of suicide rate')+
+  labs(subtitle = '2006 to 2015')+
+  geom_vline(xintercept= mean(suic_yr$suicides.100k.pop),
+             color = 'red')+
+  geom_vline(xintercept= median(suic_yr$suicides.100k.pop),
+             color = 'blue')+
+  theme_bw()
+```
+
+**\# 2 - *Consider any outliers present in the data. If present, specify the criteria used to identify them and provide a logical explanation for how you handled them.***
+
+*\# Visualizing possible outliers by country using boxplot*
+
+```{r}
+suic_yr %>% 
+  ggplot() +
+  geom_boxplot(aes(x = suicides.100k.pop, y=country),
+                 fill = 'pink',
+                 colour = 'black')+
+  labs(x = 'Suicides (per 100k Population)') +
+  labs(y = 'Country') +
+  ggtitle('Distribution of suicide rate by country')+
+  labs(subtitle = '2006 to 2015')+
+  theme_bw()
+```
+
+*\# Checking statistical information about the feature*
+
+```{r}
+suic_yr %>% 
+  group_by(country) %>% 
+  select(suicides.100k.pop) %>% 
+  summarise_all(funs(sd, mean, median, IQR))
+```
+
+*\# Identifying and removing the suicides.100k.pop outliers for each country using IQR criterion*
+
+```{r}
+suic_yr_clean <- suic_yr %>% 
+  group_by(country) %>% 
+  filter (suicides.100k.pop >= (quantile(suicides.100k.pop,0.25)-1.5*IQR(suicides.100k.pop)) & suicides.100k.pop <= quantile(suicides.100k.pop, 0.75)+1.5*IQR(suicides.100k.pop))
+```
+
+*\# Visualizing the boxplot after the outliers by country were deleted*
+
+```{r}
+suic_yr_clean %>% 
+  ggplot() +
+  geom_boxplot(aes(x = suicides.100k.pop, y=country),
+                 fill = 'pink',
+                 colour = 'black')+
+  labs(x = 'Suicides (per 100k Population)') +
+  labs(y = 'Country') +
+  ggtitle('Distribution of suicide rate by country')+
+  labs(subtitle = '2006 to 2015')+
+  theme_bw()
+```
+
+**\# 3 - *Describe the shape and skewness of the distribution.***
+
+*\# Visualizing the distribution of the data, it is possible to see that the shape is asymmetrical and have skewed Right (Median is on the right side of the Mean)*
+
+```{r}
+suic_yr_clean %>% 
+  ggplot(aes(x = suicides.100k.pop)) +
+  geom_histogram(fill = 'pink',
+                 colour = 'black')+
+  labs(x = 'Suicides (per 100k Population)') +
+  labs(y = 'Count') +
+  stat_bin(geom='text',
+           color='black',
+           size=2,
+           aes(label=after_stat(count)),
+           vjust=-1.1)+
+  ggtitle('Worldwide Distribution of suicide rate')+
+  labs(subtitle = '2006 to 2015')+
+  geom_vline(xintercept= mean(suic_yr_clean$suicides.100k.pop),
+             color = 'red')+
+  geom_vline(xintercept= median(suic_yr_clean$suicides.100k.pop),
+             color = 'blue')+
+  theme_bw()
+```
+
+**\# 4 - *Based on your answer to the previous question, decide if it is appropriate to apply a transformation to your data. If no, explain why not. If yes, name the transformation applied and visualize the transformed distribution.***
+
+*\# Because my data is over disperse I am going to use log10 function to adjust and bring my data to a distribution more close to normal*
+
+```{r}
+plot1 <- suic_yr_clean %>% 
+  ggplot(aes(x=suicides.100k.pop)) +
+  geom_histogram(fill = 'pink',
+                 colour = 'black')+
+  labs(x = 'Suicides (per 100k Population)') +
+  labs(y = 'Count') +
+  stat_bin(geom='text', 
+           color='black', 
+           size=2,
+           aes(label=after_stat(count)),
+           vjust=-1.2)+
+  ggtitle('Worldwide Distribution of suicide rate')+
+  labs(subtitle = '2006 to 2015')+
+  geom_vline(xintercept= mean(suic_yr_clean$suicides.100k.pop),
+             color = 'red')+
+  geom_vline(xintercept= median(suic_yr_clean$suicides.100k.pop),
+             color = 'blue')+
+  theme_bw()
+```
+
+```{r}
+plot2 <- plot1 + scale_x_log10()
+plot2
+```
+
+**\# 5 - *Choose and calculate an appropriate measure of central tendency.*** **\# 6 - *Explain why you chose this as your measure of central tendency. Provide supporting evidence for your choice.***
+
+*\# Since the distribution is not normal, the best measure of central tendency is Median, and is easy to see that the distribution is not normal because the value of the Mean and the Median are note the same*
+
+```{r}
+summary(log10(suic_yr_clean$suicides.100k.pop+1))
+```
+
+**\# 7 - *Choose and calculate a measure of spread that is appropriate for your chosen measure of central tendency. Explain why you chose this as your measure of spread.***
+
+*\# Since the distribution is not normal, the best measure of spread is IQR that shows the value of the third quartile minus the value of the first quartile. This shows how much the 50% of data is spread*
+
+```{r}
+IQR(log10(suic_yr_clean$suicides.100k.pop+1))
+```
+
+***\#*** [**Univariate Analysis - Categorical Variable** - **Feature "Age"**]{.underline}
+
+**\# 1 - *Create an appropriate plot to visualize the distribution of counts for this variable.***
+
+*\# Use ggplot to create a columns plot: 'Distribution of Suicides per Age - Worldwide'*
+
+```{r}
+suic_yr_clean %>% 
+  group_by(age) %>% 
+  summarize(sum_suic = sum(suicides_no)/1000) %>% 
+  ggplot(aes(x = fct_relevel(age,'5-14 yrs','15-24 yrs','25-34 yrs','35-54 yrs','55-74 yrs','75+ yrs'), y=sum_suic)) +
+  geom_col(fill = 'pink',
+           color = 'black')+
+  coord_cartesian(ylim = c(0, 1000))+
+  labs(x = 'Age') +
+  labs(y = 'Number of Suicides (x1000)')+
+  geom_text(aes(label=sum_suic), vjust = -0.3)+
+  ggtitle('Distribution of Suicides per Age - Worldwide')+
+  labs(subtitle = 'from 2006 to 2015')+
+  theme_bw()
+```
+
+***\# 2 - Create an appropriate plot to visualize the distribution of proportions for this variable.***
+
+*\# Create the percentage of suicides number by age range and use ggplot to create a pie chart: 'Distribution of Suicides per Age (%)'*
+
+\# *Source: <https://r-charts.com/part-whole/pie-chart-percentages-ggplot2/>*
+
+```{r}
+suic_yr_clean %>% 
+  group_by(age) %>% 
+  summarise(n=sum(suicides_no)) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  mutate(prop = percent(prop, digits=0)) %>% 
+  ggplot(aes(x='', y=prop, fill = fct_relevel(age,'5-14 yrs','15-24 yrs','25-34 yrs','35-54 yrs','55-74 yrs','75+ yrs'))) +
+  geom_col(color='black') +
+      coord_polar(theta = "y")+
+  labs(x = '') +
+  labs(y = '')+
+  labs(fill = 'Age')+
+  geom_text(aes(label=prop),
+            size = 2.5,
+            position = position_stack(vjust = 0.5))+
+  ggtitle('Distribution of Suicides per Age - Worldwide (%)')+
+  labs(subtitle = 'from 2006 to 2015')+
+  scale_fill_brewer(palette = 'Pastel2')+
+  theme_bw()
+```
+
+**\# 3 - *Discuss any unusual observations for this variable***
+
+\# **Answer:** Considering the world annual average between 2006 and 2015, Japan is the country with highest number of suicides of people over 55 years old and, about the youngest people, US is the country with the highest number of suicides among people between 5 and 24 years old and among people between 34 and 55 years old.
+
+```{r}
+suic_yr_clean %>% 
+  group_by(age,country) %>% 
+  summarise(avg_suic = mean(suicides_no)) %>% 
+  mutate(avg_suic = round(avg_suic,2)) %>% 
+  mutate(rank = rank(-avg_suic)) %>% 
+  filter(rank ==1) %>% 
+  arrange(rank)
+```
+
+**\# 4 - *Discuss if there are too few/too many unique values***
+
+\# **Answer:** I believe that whoever created this dataset should have kept the 10 year range for the Age feature. This difficult the data interpretation, for example, we have an increase in the number of suicides comparing the range 25-34 years old and the 35-54 years old or 55-74 years old, and this can be caused by the change in the size of the interval (from 10 years to 20 years) or it can hide a range that differs from the others.
+
+```{r}
+unique(suic_yr_clean$age)
+
+suic_yr_clean %>% 
+  group_by(age) %>% 
+  summarise(suic_sum= sum(suicides_no)) 
+```
+
+***\#*** [**Bivariate Analysis - Two Numerical Variables** - **Feature "suicides.100k.pop" and "gdp_per_capita"**]{.underline}
+
+**\# 1 - *Create an appropriate plot to visualize the relationship between the two variables.***
+
+**\# 2 - *Describe the form, direction, and strength of the observed relationship. Include both qualitative and quantitative measures, as appropriate.***
+
+**\# 3 - *Explain what this relationship means in the context of the data.***
+
+**\# 4 - Describe the variability that you observe in the plot and how that corresponds to the strength you calculated in #2 above.**\*
+
+*\# Use ggplot to create a scatter plot: 'Suicide rate vs GDP per capita'*
+
+```{r}
+
+suic_yr_clean %>% 
+  ggplot(aes(x = gdp_per_capita, y=suicides.100k.pop)) +
+  geom_point(alpha = 0.1)+
+  geom_smooth(method = 'lm', 
+              se = FALSE)+
+  labs(x = 'GDP per capita ($)') +
+  labs(y = 'Suicides (per 100k population)')+
+  labs(subtitle = '2006 to 2015')+
+  ggtitle('Suicide rate vs GDP per capita')+
+  theme_bw()
+```
+
+*\# Use the correlation function to see if there is and how strong/weak is the relationship between the two variables.*
+
+```{r}
+cor(suic_yr_clean$suicides.100k.pop, suic_yr_clean$gdp_per_capita)
+```
+
+\# **Answer:** Through the plot and the correlation function,for the subset that I'm working with considering the years of 2006 to 2015, there is no correlation between suicide rates and gdp per capita. The Pearson correlation coefficient is almost zero.
+
+***\#*** [**Bivariate Analysis - One Numerical and One categorical Variables** - **Feature "suicides.100k.pop" and "Sex"**]{.underline}
+
+***\# 1 - Create an appropriate plot to visualize the relationship between the two variables.***
+
+***\# 2 - Describe the form, direction, and strength of the observed relationship. Include both qualitative and quantitative measures, as appropriate.***
+
+***\# 3 - Explain what this relationship means in the context of the data.***
+
+***\# 4 - Describe the variability that you observe in the plot and how that corresponds to the strength you calculated in #2 above.**\**
+
+*\# Use ggplot to create a box plot: 'Suicide rate per gender'*
+
+```{r}
+
+suic_yr_clean %>% 
+  ggplot() +
+  geom_boxplot(aes(x = sex, y = suicides.100k.pop),
+               fill = 'pink')+
+  labs(x = 'Gender') +
+  labs(y = 'Suicides (per 100k Population)')+
+  labs(subtitle = 'from 2006 to 2015')+
+  ggtitle('Suicide rate per gender')+
+  theme_bw()
+```
+
+***\#*** **Answer:** Through the box plot, for the subset that I'm working with considering the years of 2006 to 2015, seems to exist a strong correlation between suicide rates and the gender. I can say this due to almost no IQR overlap for two categories.

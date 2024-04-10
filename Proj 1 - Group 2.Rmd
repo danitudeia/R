@@ -1,0 +1,339 @@
+---
+title: "Project #1 - Data Visualization - Group 2"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+**Danielle do Val Goncalves Tudeia** - Student ID: 0823569
+
+**Fernanda Barbieri de Camargo** - Student ID: 0825882
+
+" The project represents our own work and we have adhered to St. Clair College's Academic Integrity policies in completing this project."
+
+***\# R Version***
+
+RStudio 2022.12.0+353 "Elsbeth Geranium" Release (7d165dcfc1b6d300eb247738db2c7076234f6ef0, 2022-12-03) for Windows
+
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) RStudio/2022.12.0+353 Chrome/102.0.5005.167 Electron/19.1.3 Safari/537.36
+
+    R version 4.2.2 (2022-10-31 ucrt)
+
+***\# Import the tidyverse package because contains the ggplot2 used on data visualization***
+
+```{r}
+library(tidyverse)
+```
+
+***\# Check the tidyverse package version***
+
+```{r}
+packageVersion("tidyverse")
+```
+
+***\# Import the gganimate package to accomplish the data visualization's competition (we've already installed)***
+
+```{r}
+library(gganimate)
+```
+
+***\# Check the gganimate package version***
+
+```{r}
+packageVersion("gganimate")
+```
+
+***\# Information about the dataset used in this project***
+
+[Name of data set:]{.underline} [Suicide Rates Overview 1985 to 2016](https://www.kaggle.com/datasets/russellyates88/suicide-rates-overview-1985-to-2016)
+
+[Platform:]{.underline} Kaggle
+
+[Creator's username:]{.underline} [Rusty](https://www.kaggle.com/russellyates88)
+
+These data set is licensed by World Bank Dataset.
+
+[Data set file's name]{.underline}: master.csv
+
+***\# Changes done in the dataset before load it to R Studio***
+
+The column ' I ' was almost totally empty so we removed it before load the file to R Studio. Now, there are 27,821 observations and 11 features on the dataset.
+
+***\# Load the dataset's file to R Studio using the read.csv***
+
+```{r}
+suic = read.csv("C:/Users/Danielle/Documents/master.csv")
+```
+
+***\# Check the dataframe information such as features, data type, etc.***
+
+```{r}
+glimpse(suic)
+```
+
+```{r}
+summary(suic)
+```
+
+***\# Visualize how the name of countries are written on the dataset***
+
+```{r}
+unique(suic$country)
+```
+
+***\# Define the country that is going to be used in the plots - We choose Guyana because the country has one of Top 5 suicide rate in the World. Then we create a subset only with Guyana's observations***
+
+```{r}
+suic_guyana <- suic %>% 
+  filter(country == 'Guyana')
+```
+
+***\# Visualize the distinct years on the dataset for the country Guyana***
+
+```{r}
+unique(suic_guyana$year)
+```
+
+***\# Adjust the data on feature "Age", transforming "years" to "yrs" it will help the plot to be more "readable"***
+
+```{r}
+suic_guyana$age <- gsub("years", "yrs", suic_guyana$age)
+```
+
+***\# Create*** ***two plots displaying the distribution of a single continuous variable***
+
+*\# To organize the data, create a new dataframe that has the mean of suicide rate aggregated by year*
+
+```{r}
+suic_year_rate_avg <- aggregate(suicides.100k.pop ~ year, suic_guyana, mean)
+```
+
+*\# Use ggplot to create a density plot: 'Distribution of Suicide Rate in Guyana'*
+
+```{r}
+suic_year_rate_avg %>% 
+  ggplot() +
+  geom_density(aes(x = suicides.100k.pop),
+                 fill = 'pink',
+                 colour = 'black')+
+  labs(x = 'Suicides (per 100k Population)') +
+  labs(y = 'Density')+
+  labs(subtitle = 'from 1988 to 2013')+
+  labs(caption = "Note: From 1988 to 2013, the anual suicide rate average \n was more frequent between 27 and 33 suicides/100k population")+
+  ggtitle('Distribution of Suicide Rate in Guyana')+
+  theme_bw()
+```
+
+*\# Use ggplot to create the histogram: 'Distribution of Suicide Rate in Guyana'*
+
+```{r}
+suic_year_rate_avg %>% 
+  ggplot() +
+  geom_histogram(aes(x=suicides.100k.pop),
+                 fill = 'pink',
+                 colour = 'black',
+                 binwidth = 5)+
+  labs(x = 'Suicides (per 100k population)')+
+  labs(y = 'Number of Years')+
+  labs(subtitle = 'from 1988 to 2013')+
+  labs(caption = "Note: From 1988 to 2013, the anual suicide rate average \n stayed between 27 and 33 suicides/100k population for 8 years")+
+  ggtitle('Distribution of Suicide Rate in Guyana')+
+  theme_bw()
+```
+
+***\# Create*** ***two plots displaying the distribution of a single categorical variable***
+
+*\# To organize the data, create a new dataframe that has the sum of suicides number aggregated by age*
+
+```{r}
+suic_age_sum <- aggregate(suicides_no ~ age, suic_guyana, sum)
+```
+
+*\# Use ggplot to create a plot: 'Suicides in Guyana per Age'*
+
+```{r}
+suic_age_sum %>% 
+  ggplot(aes(x = fct_relevel(age,'5-14 yrs','15-24 yrs','25-34 yrs','35-54 yrs','55-74 yrs','75+ yrs'), y = suicides_no)) +
+  geom_col(fill = 'pink',
+           color = 'black')+
+  labs(x = 'Age') +
+  labs(y = 'Number of Suicides')+
+  labs(subtitle = 'from 1988 to 2013')+
+  labs(caption = "Note: From 1988 to 2013, the number of suicides was more \n frequent among people who had between 35 and 54 years old")+
+  ggtitle('Suicides in Guyana per Age')+
+  theme_bw()
+```
+
+*\# To organize the data, create a new dataframe that has the sum of suicides number aggregated by gender*
+
+```{r}
+suic_sex_sum <- aggregate(suicides_no ~ sex, suic_guyana, sum)
+```
+
+*\# Use ggplot to create a plot: 'Suicides in Guyana per Gender'*
+
+```{r}
+suic_sex_sum %>% 
+  ggplot(aes(x = sex, y = suicides_no)) +
+  geom_col(fill = 'pink',
+           color = 'black')+
+  labs(x = 'Gender') +
+  labs(y = 'Number of Suicides')+
+  labs(subtitle = 'from 1988 to 2013')+
+  labs(caption = "Note: From 1988 to 2013, men commit more than twice as many suicides as women")+
+  ggtitle('Suicides in Guyana per Gender')+
+  theme_bw()
+```
+
+***\# Create*** ***one plot displaying information about both a continuous variable and a categorical variable***
+
+*\# To organize the data, create a new dataframe that has the mean of suicide rate aggregated by age and year*
+
+```{r}
+suic_age_rate_avg <- aggregate(suicides.100k.pop ~ age + year, suic_guyana, mean)
+```
+
+*\# Use ggplot to create a boxplot: 'Suicide Rate in Guyana per Age'*
+
+```{r}
+suic_age_rate_avg %>% 
+  ggplot() +
+  geom_boxplot(aes(x = fct_relevel(age,'5-14 yrs','15-24 yrs','25-34 yrs','35-54 yrs','55-74 yrs','75+ yrs'), y = suicides.100k.pop),
+               fill = 'pink')+
+  labs(x = 'Age') +
+  labs(y = 'Suicides (per 100k Population)')+
+  labs(subtitle = 'from 1985 to 2016')+
+  labs(caption = "Note: On average, from 1988 to 2013, people between \n the ages of 24 and 35 years old have the highest suicide rate")+
+  ggtitle('Suicide Rate in Guyana per Age')+
+  theme_bw()
+```
+
+***\# Create two plots should display information that shows a relationship between two variables***
+
+*\# Filter the dataframe to leave only the people who probably is economic active (\>=15 and \<75 years)*
+
+```{r}
+suic_guyana_prod <- suic_guyana %>% 
+  filter(suic_guyana$age != '5-14 yrs' & suic_guyana$age != '75+ yrs')
+```
+
+*\# To organize the data, create a new dataframe that has the average of suicide rate aggregate by gdp per capita*
+
+```{r}
+suic_pop_year_avg <- aggregate(suicides.100k.pop ~ gdp_per_capita...., suic_guyana_prod, mean)
+```
+
+*\# Use ggplot to create the plot: 'Suicide Rate vs GDP per Capita'*
+
+```{r}
+suic_pop_year_avg %>% 
+  ggplot(aes(x=gdp_per_capita...., y=suicides.100k.pop)) +
+  geom_point()+
+  geom_smooth(fill = 'pink',
+              colour = 'black',
+              linewidth = 0.5)+
+  labs(x = 'GDP per Capita ($)') +
+  labs(y = 'Suicides (per 100k population)')+
+  labs(subtitle = 'Age between 15 and 75 yrs')+
+  labs(caption = "Note: The GDP per capita doesn't have correlation to the Suicide Rate")+
+  ggtitle('Suicide Rate vs GDP per Capita')+
+  theme_bw()
+```
+
+*\# To organize the data, create a new dataframe that has the sum of population aggregate by year*
+
+```{r}
+suic_year_pop_sum <- aggregate(population ~ year, suic_guyana, sum)
+```
+
+*\# Create a new dataframe with the feature population (sum) and suicide rate (average)*
+
+```{r}
+suic_pop_rate <- suic_year_pop_sum %>% 
+  add_column(suicides.100k.pop = suic_year_rate_avg$suicides.100k.pop)
+
+```
+
+*\# Use ggplot to create the plot: 'Suicide Rate vs Population'*
+
+```{r}
+suic_pop_rate %>% 
+  ggplot(aes(x=population, y=suicides.100k.pop)) +
+  geom_point()+
+  geom_smooth(fill = 'pink',
+              colour = 'black',
+              linewidth = 0.5)+
+  labs(x = 'Population') +
+  labs(y = 'Suicides (per 100k population)')+
+  labs(subtitle = 'from 1988 to 2013')+
+  labs(caption = "Note: The population doesn't have correlation to the Suicide Rate")+
+  ggtitle('Suicide Rate vs Population')+
+  theme_bw()
+```
+
+***\# Create one plot use faceting and displaying information about 4 variables***
+
+*\# To organize the data, create a new dataframe that has the sum of suicide rate aggregate by year, sex and age*
+
+```{r}
+sum_suic_sex_age <- aggregate(suicides.100k.pop ~ sex + generation + year, suic_guyana, mean)
+```
+
+*\# Use ggplot to create the plot 'Suicide rate in Guyana over the Years split by Sex and Generation'*
+
+```{r}
+sum_suic_sex_age %>% 
+  filter(year >=2000) %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = suicides.100k.pop),
+            size = 0.5,
+            colour = 'blue') +
+  facet_grid(sex ~ generation) +
+  geom_point(aes(x = year, y = suicides.100k.pop),
+             colour = 'blue')+
+  labs(x = 'Year') +
+  labs(y = 'Suicides (per 100k population)')+
+  labs(subtitle = 'by Sex and Generation')+
+  labs(caption = "Note: The highest suicide rates are for men from Generation X, however,\n there is a growing trend among Millenials. Generation Z has the lower rates")+
+  ggtitle('Suicide rate in Guyana over the Years')+
+  theme_bw()
+```
+
+***\# Create competition plot: an opportunity to explore what's possible and get creative***
+
+*\# Create a new dataframe only containing information about men between 15 and 24 years old*
+
+```{r}
+suic_guyana_comp <- suic_guyana %>% 
+  filter(suic_guyana$sex =='male' & year >=2000)
+```
+
+*\# To organize the data, create a new dataframe that has the sum of suicide rate aggregate by year, sex and age*
+
+```{r}
+suic_guyana_comp_avg <- aggregate(suicides.100k.pop ~ generation + year,suic_guyana_comp, mean)
+```
+
+*\# Use ggplot and gganimate to create an animated plot: 'Male suicide rate in Guyana over the Years'*
+
+```{r}
+suic_plt_comp <- suic_guyana_comp_avg %>% 
+  ggplot() +
+  geom_line(aes(x = year, y = suicides.100k.pop, color = generation),
+            linewidth = 0.8) +
+  labs(x = 'Year') +
+  labs(y = 'Suicides (per 100k population)')+
+  labs(color = 'Generation')+
+  labs(subtitle = 'by Generation')+
+  labs(caption = "Note: The highest suicide rates are for men from Generation X, however,\n there is a growing trend among Millenials")+
+  ggtitle('Male suicide rate in Guyana over the Years')+
+  theme_bw()
+
+```
+
+```{r}
+suic_plt_comp +
+  transition_reveal(year)
+```
+
+<http://localhost:10749/session/file716814fe4e4d.gif>

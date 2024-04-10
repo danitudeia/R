@@ -1,0 +1,501 @@
+---
+title: "Assignment 3 - Basic Stats"
+output:
+  word_document: default
+---
+
+**The tidyverse package will be use through the assignment**
+
+```{r}
+library (tidyverse)
+```
+
+**The reshape package will be use to create the correlation matrix** **Source:<https://www.geeksforgeeks.org/how-to-create-correlation-heatmap-in-r/>**
+
+```{r}
+library(reshape2)
+```
+
+**Importing the dataset to R Studio as "pok"**
+
+```{r}
+pok <- read_csv("C:/Users/Danielle/OneDrive - St. Clair College/02 - Basic Stats/Assignments/Assignment 3/pokemon.csv", show_col_types = FALSE)
+```
+
+**Exploring the data - visualizing the first rows**
+
+```{r}
+head(pok)
+```
+
+**Exploring the data - visualizing information about the features - data types**
+
+```{r}
+glimpse(pok)
+```
+
+**Exploring the data - visualizing statistical information about the features**
+
+```{r}
+summary(pok)
+```
+
+**Exploring the data using plots - Species**
+
+```{r}
+pok %>% 
+  group_by(species) %>% 
+  summarise(count_sp = n()) %>% 
+  ggplot(aes(x=species, y=count_sp))+
+  geom_col(fill = 'pink',
+                 color='black')+
+  coord_cartesian(ylim = c(0,45))+
+  geom_text(aes(label=count_sp), 
+            vjust = -0.8)+
+  labs(x = 'Species names')+
+  labs(y = 'Count') +
+  ggtitle('Species')+
+  theme_bw()
+
+```
+
+**Exploring the data using plots - Stardust Required to Power-up**
+
+```{r}
+pok %>% 
+  group_by(power_up_stardust) %>% 
+  summarise(count_stard = n()) %>% 
+  ggplot(aes(x=factor(power_up_stardust), y=count_stard))+
+  geom_col(fill = 'pink')+
+  geom_text(aes(label = count_stard), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,20))+
+  labs(x = 'Stardust required to power-up')+
+  labs(y = 'Count') +
+  ggtitle('Stardust required to power-up')+
+  theme_bw()
+```
+
+**Exploring the data using plots - Candies Required to Power-up**
+
+```{r}
+pok %>% 
+  group_by(power_up_candy) %>% 
+  summarise(count_cand = n()) %>% 
+  ggplot(aes(x=factor(power_up_candy), y=count_cand))+
+  geom_col(fill = 'pink')+
+  geom_text(aes(label = count_cand), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,45))+
+  labs(x = 'Candies required to power-up')+
+  labs(y = 'Count') +
+  ggtitle('Candies required to power-up')+
+  theme_bw()
+```
+
+**Exploring the data using plots - Weight vs Height**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=weight, y=height))+
+  geom_point()+
+  geom_smooth(color='red',
+              fill='pink',
+              method = 'lm')+
+  labs(x = 'Weight')+
+  labs(y = 'Height') +
+  ggtitle('Relation between Pokemon Weight and Height')+
+  facet_wrap(~species)+
+  theme_bw()
+```
+
+**Exploring the data using plots - Weaker Attack value before Power-up**
+
+```{r}
+pok %>% 
+  group_by(attack_weak_value) %>% 
+  summarise(count_atk = n()) %>% 
+  ggplot(aes(x=factor(attack_weak_value), y=count_atk))+
+  geom_col(fill = 'pink')+
+  geom_text(aes(label = count_atk), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,40))+
+  labs(x = 'Weaker attack value')+
+  labs(y = 'Count') +
+  ggtitle('Distribution of weaker attack value')+
+  labs(subtitle ='Before power-up')+
+  theme_bw()
+```
+
+**Exploring the data using plots - Weaker Attack value after Power-up**
+
+```{r}
+pok %>% 
+  group_by(attack_weak_value_new) %>% 
+  summarise(count_atk = n()) %>% 
+  ggplot(aes(x=factor(attack_weak_value_new), y=count_atk))+
+  geom_col(fill = 'pink')+
+  geom_text(aes(label = count_atk), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,40))+
+  labs(x = 'Weaker attack value')+
+  labs(y = 'Count') +
+  ggtitle('Distribution of weaker attack value')+
+  labs(subtitle ='After power-up')+
+  theme_bw()
+```
+
+**Exploring the data using plots - Stronger Attack value before Power-up**
+
+```{r}
+pok %>% 
+  group_by(attack_strong_value) %>% 
+  summarise(count_atk = n()) %>% 
+  ggplot(aes(x=factor(attack_strong_value), y=count_atk))+
+  geom_col(fill = 'pink')+
+  geom_text(aes(label = count_atk), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,40))+
+  labs(x = 'Stronger attack value')+
+  labs(y = 'Count') +
+  ggtitle('Distribution of stronger attack value')+
+  labs(subtitle ='Before power-up')+
+  theme_bw()
+```
+
+**Exploring the data using plots - Stronger Attack Value after Power-up**
+
+```{r}
+pok %>% 
+  group_by(attack_strong_value_new) %>% 
+  summarise(count_atk = n()) %>% 
+  ggplot(aes(x=factor(attack_strong_value_new), y=count_atk))+
+  geom_col(fill = 'pink')+
+  geom_text(aes(label = count_atk), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,40))+
+  labs(x = 'Stronger attack value')+
+  labs(y = 'Count') +
+  ggtitle('Distribution of stronger attack value')+
+  labs(subtitle ='After power-up')+
+  theme_bw()
+```
+
+**Exercise 1 - Calculate the difference in heights pre and post evolution and save this as a new variable. Calculate the percentage of Pokemon that grew during evolution. Also visualize the distribution of change in height by species and provide a discussion of how change in height varies across species.**
+
+```{r}
+pok %>% 
+  mutate(pok_heigh_diff = height_new - height) %>% 
+  mutate(pok_grow = (length(pok_heigh_diff > 0) / n()) * 100 ) %>% 
+  group_by(pok_heigh_diff, species) %>% 
+  summarise(count_plot = n()) %>% 
+  filter(count_plot > 0) %>% 
+  ggplot(aes(x= pok_heigh_diff))+
+  geom_histogram(fill='pink',
+                 color='black',
+                 binwidth = 0.05)+
+  facet_grid(~species)+
+  labs(x = 'Heigh change')+
+  labs(y = 'Count') +
+  ggtitle('Change in height by Specie')+
+  labs(subtitle ='After power-up')+
+  theme_bw()
+```
+
+**Answer - Pidgey are the specie with most height increase after power-up, with all observations growing more than 0.5 meters. Weedles and Catepies, on the other hand, are the ones that grow the least, as we can see that all observations were below 0.50 meters. For Eevees, growth varies between 0.5 and 0.875 meters.**
+
+**Exercise 2 - Recreate the following plot.** **Source: <https://ggplot2.tidyverse.org/reference/position_dodge.html>** [**https://ggplot2-book.org/polishing.html**](https://ggplot2-book.org/polishing.html){.uri}
+
+```{r}
+pok %>% 
+  filter(species != 'Weedle') %>% 
+  group_by(species, attack_weak) %>% 
+  summarise(count_plot = n()) %>% 
+  ggplot(aes(y=species, x=count_plot, fill = attack_weak))+
+  geom_col(position ='dodge')+
+  labs(x = 'Frequency')+
+  labs(y = 'Species') +
+  labs(fill = 'Attack weak')+
+  ggtitle('Pre-evolution weaker attack of the Pokémon')+
+  labs(subtitle ='by species')+
+  theme_minimal()
+```
+
+**Exercise 3 - Pick two categorical variables and make a bar plot that depicts the relationship between them. These can be variables from the original data or ones that you create based on the given data.** **Source:<http://www.sthda.com/english/wiki/ggplot2-axis-ticks-a-guide-to-customize-tick-marks-and-labels>** **Source:<https://ggplot2.tidyverse.org/reference/theme.html>**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=attack_strong_type_new, fill = attack_strong_type ))+
+  geom_bar()+
+  labs(x = 'Stronger attack type - Pos-evolution')+
+  labs(y = 'Frequency') +
+  labs(fill = 'Stronger attack type - Pre-evolution')+
+  ggtitle("Pokémon's strongest attack type")+
+  labs(subtitle = 'Pre vs pos-evolution')+
+  theme(axis.text.x = element_text(hjust=1, angle=45),
+        panel.background = element_rect(fill = "white", 
+                                        colour = "grey50"),
+        panel.grid.major = element_line(colour = "lightgrey"))
+```
+
+**Exercise 4 - Pick a numerical and a categorical variable, and construct side-by-side box plots depicting the relationship between them.**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=species, y=hp, fill=species))+
+  geom_boxplot()+
+  labs(x = '')+
+  labs(y = 'Hit points') +
+  labs(fill = 'Species')+
+  ggtitle('Pre-evolution hit points vs Species of the Pokémon')+
+  facet_grid(~species)+
+  theme(axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "white", 
+                                        colour = "grey50"),
+        panel.grid.major = element_line(colour = "lightgrey"),
+        strip.background = element_rect(colour = "black"))
+```
+
+**Exercise 5 - Learn something new: violin plots! Read about them at <http://ggplot2.tidyverse.org/reference/geom_violin.html>, and convert your side-by-side box plots from the previous task to violin plots. What do the violin plots reveal that box plots do not? What features are apparent in the box plots but not in the violin plots?**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=species, y=hp, fill=species))+
+  geom_violin()+
+  labs(x = '')+
+  labs(y = 'HP') +
+  labs(fill = 'Species')+
+  ggtitle('Pre-evolution HP vs Species of the Pokémon')+
+  facet_grid(~species)+
+  theme(axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_rect(fill = "white", 
+                                        colour = "grey50"),
+        panel.grid.major = element_line(colour = "lightgrey"),
+        strip.background = element_rect(colour = "black"))
+```
+
+**Answer - Using the violin plot I can see the points where there are concentration of observations, on the other hand, boxplots are better to visualize possible outliers and some statistical information like IQR and median.**
+
+**Exercise 6 - What characteristics correspond to an evolved Pokémon with a high combat power? You do not need to come up with an exhaustive list, but you should walk us through your reasoning for answering this question and include all relevant summary statistics and visualizations.**
+
+**A first way to see the relationship between the information is creating a correlation matrix** **Source: <https://www.geeksforgeeks.org/how-to-create-correlation-heatmap-in-r/>**
+
+```{r}
+pok_sel <-pok %>% 
+  select(cp_new, weight_new, height_new, hp_new, attack_weak_value_new, attack_strong_value_new)
+
+pok_cor <-round(cor(pok_sel, use="complete.obs", method="pearson"),2)
+
+pok_cor_adj <-melt(pok_cor)
+
+pok_cor_adj %>% 
+  ggplot(aes(x=Var1, y=Var2,
+             fill=value))+
+  geom_tile()+
+  geom_text(aes(Var2, Var1, label = value),
+          color = "white", size = 4)+
+  labs(x = '')+
+  labs(y = '') +
+  ggtitle("Correlation between the features")+
+  labs(subtitle = 'Pos-evolution')+
+  theme_bw()
+```
+
+**The second way is using scatter plots** **Creating a scatter plot Combat Power vs Weight**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=cp_new, y=weight_new))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's weight pos-evolution")+
+  theme_bw()
+```
+
+**Creating a scatter plot Combat Power vs Height**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=cp_new, y=height_new))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's height pos-evolution")+
+  theme_bw()
+```
+
+**Creating a scatter plot Combat Power vs Hit Points**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=cp_new, y=hp_new))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's hit points pos-evolution")+
+  theme_bw()
+```
+
+**Creating a scatter plot Combat Power vs Weaker Attack**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=cp_new, y=attack_weak_value_new))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's weaker attack pos-evolution")+
+  theme_bw()
+```
+
+**Creating a scatter plot Combat Power vs Stronger Attack**
+
+```{r}
+pok %>% 
+  ggplot(aes(x=cp_new, y=attack_strong_value_new))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's stronger attack pos-evolution")+
+  theme_bw()
+```
+
+**The third way is creating categories of Combat Power and forming a profile for each category based on the available features**
+
+**Divide combat power into 3 ranges of 25 observations each.**
+
+```{r}
+pok_cp <- pok %>% 
+  mutate(cp_range = cut_number(cp_new,3, c('Low combat power','Medium combat power','High combat power')))
+```
+
+**Checking the ranges created**
+
+```{r}
+  pok_cp %>% 
+  select(cp_range, cp_new)
+```
+
+**Creating a profile for the Groups of Combat Power - Weight**
+
+```{r}
+pok_cp %>% 
+  group_by(cp_range) %>% 
+  summarise(weigh_check = median(weight_new)) %>% 
+  ggplot(aes(x=cp_range, y=weigh_check))+
+  geom_col(fill=c('green','yellow','red'))+
+  geom_text(aes(label = weigh_check), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,6.5))+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's weight")+
+  theme_bw()
+```
+
+**Creating a profile for the Groups of Combat Power - Height**
+
+```{r}
+pok_cp %>% 
+  group_by(cp_range) %>% 
+  summarise(height_check = median(height_new)) %>% 
+  ggplot(aes(x=cp_range, y=height_check))+
+  geom_col(fill=c('green','yellow','red'))+
+  geom_text(aes(label = height_check), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,1.5))+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's height")+
+  theme_bw()
+
+```
+
+**Creating a profile for the Groups of Combat Power - Hit points**
+
+```{r}
+pok_cp %>% 
+  group_by(cp_range) %>% 
+  summarise(hp_check = median(hp_new)) %>% 
+  ggplot(aes(x=cp_range, y=hp_check))+
+  geom_col(fill=c('green','yellow','red'))+
+  geom_text(aes(label = hp_check), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,85))+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's hit power")+
+  theme_bw()
+
+```
+
+**Creating a profile for the Groups of Combat Power - Weaker attack value**
+
+```{r}
+pok_cp %>% 
+  group_by(cp_range) %>% 
+  summarise(wa_check = median(attack_weak_value_new)) %>% 
+  ggplot(aes(x=cp_range, y=wa_check))+
+  geom_col(fill=c('green','yellow','red'))+
+  geom_text(aes(label = wa_check), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,15))+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's weaker attack")+
+  theme_bw()
+
+```
+
+**Creating a profile for the Groups of Combat Power - Stronger attack value**
+
+```{r}
+pok_cp %>% 
+  group_by(cp_range) %>% 
+  summarise(sa_check = median(attack_strong_value_new)) %>% 
+  ggplot(aes(x=cp_range, y=sa_check))+
+  geom_col(fill=c('green','yellow','red'))+
+  geom_text(aes(label = sa_check), 
+            vjust =-1)+
+  coord_cartesian(ylim = c(0,40))+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's stronger attack")+
+  theme_bw()
+```
+
+**Creating a profile for the Groups of Combat Power - Species**
+
+```{r}
+pok_cp %>% 
+  group_by(cp_range, species) %>% 
+  summarise(sa_check = median(attack_strong_value_new)) %>% 
+  ggplot(aes(x=cp_range, y=sa_check, fill = species))+
+  geom_col()+
+  labs(x = 'Combat power')+
+  labs(y = 'Frequency') +
+  labs(fill='Species')+
+  labs(subtitle = 'per Combat power')+
+  ggtitle("Pokémon's species")+
+  theme_bw()
+```
+
+**Answer - Pokémon that have high combat power are also the tallest and heaviest, in addition to having stronger hit power, weaker and stronger attacks than the others. As for the species, Eevees are Pokemons with high combat power and part of the Pidgey as well.**

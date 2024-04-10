@@ -1,0 +1,44 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+library(gapminder)
+library(tidyverse)
+```
+
+```{r}
+my_data <- gapminder
+
+avg_world <- aggregate(lifeExp ~ continent + year, my_data, median)
+
+ggplot(data = avg_world)+
+  geom_col(mapping = aes(x = year, y = lifeExp),
+           colour ='black',
+           fill = 'pink')+
+  facet_wrap(~ continent)+
+  labs(x ='Year')+
+  labs(y = 'Life Expectancy at Birth (Years)')+
+  ggtitle('Evolution of Worldwide Life Expectancy over the Years')+
+  theme_bw()
+```
+```{r}
+
+avg_world <- aggregate(gdpPercap ~ continent + year, my_data, median)
+
+ggplot(data = avg_world)+
+  geom_col(mapping = aes(x = year, y = gdpPercap),
+           colour ='black',
+           fill = 'pink')+
+  facet_wrap(~ continent)+
+  labs(x ='Year')+
+  labs(y = 'GDP per capita (US$, inflation-adjusted)')+
+  ggtitle('Evolution of Worldwide GDP per capita over the Years')+
+  theme_bw()
+```
+```{r}
+print("The world is becoming a better place, people lives more time no matter where they are and overall live with more financial resources")
+```
+

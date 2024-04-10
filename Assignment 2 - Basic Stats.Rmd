@@ -1,0 +1,164 @@
+---
+title: "Assignment 2 - Basic Stats"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r}
+# **** The tidyverse package will be use through the assignment ****
+
+library (tidyverse)
+```
+
+
+```{r}
+# **** Importing the dataset to R Studio as "fuel" ****
+
+fuel <- read_csv("C:/Users/Danielle/OneDrive - St. Clair College/02 - Basic Stats/Assignments/Assignment 2/18100001.csv")
+```
+
+
+```{r}
+# **** Importing the dataset to R Studio as "fuel" including the code showed by the R Studio message above to avoid receive it again****
+
+fuel <- read_csv("C:/Users/Danielle/OneDrive - St. Clair College/02 - Basic Stats/Assignments/Assignment 2/18100001.csv", show_col_types = FALSE)
+```
+
+
+```{r}
+fuel
+```
+
+```{r}
+# **** Exploring the dataset - visualizing the Top rows ****
+
+head(fuel)
+
+```
+
+
+```{r}
+# **** Exploring the dataset - visualizing the Bottom rows ****
+
+tail(fuel)
+
+```
+
+```{r}
+# **** Exploring the dataset - visualizing the statistical information about each feature ****
+
+summary(fuel)
+
+```
+
+
+```{r}
+# **** Delete the features that have only NAs and won't be use and adjust others ****
+
+fuel_clean <- fuel %>% 
+  select(-STATUS, -SYMBOL, -TERMINATED) %>% 
+  filter(GEO != 'Canada') %>% 
+  mutate(REF_DATE = paste(REF_DATE,'01',sep="-")) %>% 
+  rename(type_fuel = `Type of fuel`)
+
+
+```
+
+```{r}
+fuel_clean
+```
+
+```{r}
+# **** Adjust the data type of the feature REF_DATE ****
+
+fuel_clean$REF_DATE <- as.Date(fuel_clean$REF_DATE, format = "%Y-%m-%d")
+
+```
+
+
+
+```{r}
+# **** Checking the adjust on the feature REF_DATE ****
+
+glimpse(fuel_clean)
+
+```
+
+
+```{r}
+# **** Exploring the adjusted dataset - visualizing the statistical information about each feature ****
+
+summary(fuel_clean)
+```
+
+```{r}
+# **** How was the behavior of fuel price by type of fuel over 2022? ****
+
+fuel_clean %>% 
+  select(type_fuel, REF_DATE, VALUE) %>% 
+  filter(REF_DATE >='2022-01-01') %>% 
+  group_by(REF_DATE,type_fuel) %>% 
+  summarise_all(funs(mean)) %>% 
+  ggplot()+
+  geom_line(aes(x=REF_DATE, y=VALUE, colour=type_fuel),
+            size=1)+
+  labs(x = 'Month')+
+  labs(y = 'Average fuel price per litre (CAD)') +
+  labs(colour = 'Type of fuel') +
+  labs(caption = 'Note: Along 2022, the curves of the price are similar \n for every fuel type, however, householding heating fuel \n and diesel did not returned to the patamar of January22.\n House holding heating fuel started the year as the less\n expensive fuel and ended as the second most expensive.')+
+  ggtitle('Price of each fuel type in Canada over 2022')+
+  theme_bw()
+
+```
+
+```{r}
+# **** What are the cities in Canada with the higher average fuel price from 2002 to 2022? ****
+
+fuel_clean %>% 
+  filter(REF_DATE >='2002-01-01') %>% 
+  group_by(GEO) %>% 
+  summarise(avg_prc = mean(VALUE), na.rm = TRUE) %>% 
+  mutate(avg_prc = round(avg_prc,2)) %>% 
+  mutate(rank = rank(-avg_prc)) %>% 
+  filter(rank <= 5) %>% 
+  ggplot(aes(x=avg_prc, y=reorder(GEO, avg_prc)))+
+  geom_col(fill='pink',
+           colour='black')+
+  coord_cartesian(xlim = c(0, 130))+
+  labs(x = 'Average fuel price per litre (CAD)')+
+  labs(y = 'City, Province') +
+  labs(subtitle = 'from 2002 to 2022')+
+  labs(caption = 'Note: From 2002 to 2022, Yellowknife was the  \n city in Canada where the fuel was more expensive')+
+  geom_text(aes(label=avg_prc), hjust = -0.2)+
+  ggtitle('Top 5 cities in Canada with the most expensive fuel')+
+  theme_test()
+
+```
+
+```{r}
+# **** What is the most and the least expensive fuel type in Yellowknife since 2002? ****
+
+fuel_clean %>% 
+  filter(REF_DATE >='2002-01-01' & GEO == 'Yellowknife, Northwest Territories') %>% 
+  group_by(type_fuel) %>% 
+  summarise(avg_prc = mean(VALUE), na.rm = TRUE) %>% 
+  mutate(avg_prc = round(avg_prc,2)) %>% 
+  mutate(rank = rank(-avg_prc)) %>% 
+  filter(rank == 1 | rank == max(rank)) %>% 
+  ggplot(aes(x=avg_prc, y=reorder(type_fuel, avg_prc)))+
+  geom_col(fill='pink',
+           colour='black')+
+  coord_cartesian(xlim = c(0,180))+
+  labs(x = 'Average fuel price per litre (CAD)')+
+  labs(y = 'Type of fuel') +
+  labs(subtitle = 'from 2002 to 2022')+
+  labs(caption = 'Note: From 2002 to 2022, on average, premium gasoline was the \n most expensive fuel type in Yellowknife and household heating fuel \n the least expensive.')+
+  geom_text(aes(label=avg_prc), hjust = -0.2)+
+  ggtitle('Most and least expensive fuel type in Yellowknife')+
+  theme_test()
+
+```

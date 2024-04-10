@@ -1,0 +1,185 @@
+---
+title: "DAB501 Final Project - Group 2"
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+## Student Information
+
+- Group Number: 2
+- Student Name and Student ID of Group members: 
+Danielle do Val Goncalves Tudeia - Student ID: 0823569
+Fernanda Barbieri de Camargo - Student ID: 0825882
+
+##Academic Integrity
+
+*Replace the underscores below with your names acknowledging that you have read and understood the statement in the context of St. Clair College’s Academic Integrity policies.* 
+
+ 
+
+We, Danielle do Val Goncalves Tudeia and Fernanda Barbieri de Camargo, hereby state that we have not communicated with or gained information in any way from any other group or resource that would violate the College’s academic integrity policies, and that all work is my own. 
+
+## Instructions 
+
+Follow the instructions on the handout provided. 
+
+
+## Packages and Data
+
+```{r}
+library(tidyverse)
+library(here)
+library(patchwork) # Used to create the plots side by side on Question 2 of the Model Diagnostics part
+```
+
+```{r}
+# Replace the _____ with the correct file name
+df <- read_csv(here('Group2.csv'))
+```
+
+## MODELING: First pair of variables - Fernanda
+
+### Question 1
+```{r}
+cor(df$temp,df$count)
+```
+
+The explanatory variable chosen is "temp" = the average daily temperature in degrees Fahrenheit.
+
+### Question 2
+The response variable is "count" = the number of bikes rented on a particular day.
+
+### Question 3
+
+```{r}
+f1 <- lm(count ~ temp, data = df)
+summary(f1)
+```
+
+### Question 4
+ŷ = 1054.94 + 72.58 * temp
+
+### Question 5
+The intercept means that if the average temperature is 0 Fahrenheit, the average of bikes rented is 1054.94.
+
+### Question 6
+Analyzing the chart in Q1, we can notice that there is not any data when the temperature is low the 15.08 Fahrenheit degrees. And, using the common sense, it is strange that people rent bikes when the temperature is too low. So, for this case, the intercept is only necessary to build the line equation.
+
+### Question 7
+The slope means the growth rate of average bicycle rentals in relation to the increase in average temperature. So, for each temperature degree increased, we would expect that the average number of rented bikes will increase by 72.58.
+
+
+## MODELING: Second pair of variables - Danielle
+
+### Question 1
+
+```{r}
+cor(df$precipitation,df$count)
+```
+The explanatory variable is Precipitation that is the amount of precipitation in mm (x).
+
+### Question 2
+The response variable is Count that represents the number of bikes rented on a particular day (y).
+
+### Question 3
+
+```{r}
+m1 <- lm(count ~ precipitation, data = df)
+summary(m1)
+
+```
+
+### Question 4
+ŷ = 2698.682 + 42.414 * precipitation
+
+### Question 5
+On days when there is no precipitation, an average of 2698 bicycles are expected to be rented.
+
+### Question 6
+It is a meaningful value, there are data points close to precipitation = 0, however it does not make sense that the number of rented bikes is higher when there is no precipitation compared to other days.
+
+### Question 7
+For every additional millimeter in precipitation, we would have expect the average number of rented bicycles to increase by 42.
+
+
+## MODEL ASSESSMENT
+
+### Question 1
+The way we are going to compare both models is using their R-squared. 
+
+### Question 2
+The R-squared is the square of the correlation coefficient (r) and is a metric of how much the variability of the response variable is explained by the model.
+
+### Question 3
+In our case, the best model is the first where the temperature explains 41% of the variability of the number of rented bicycle. On the second model, the precipitation explains only 18% of the variability of the number of rented bicycle.
+
+
+## MODEL DIAGNOSTICS
+
+### Question 1
+
+```{r}
+df_best <- df %>%
+  mutate(pred_count = 1054.94 + 72.58 * temp,
+         residuals = count - pred_count) %>%
+  select(temp, count, pred_count, residuals)
+
+df_best
+```
+
+### Question 2
+
+```{r}
+df %>%
+  select(temp, count) %>%
+  ggplot(aes(x = temp, y = count))+
+  geom_point()+
+  geom_smooth(method = "lm", se = FALSE)+
+  labs(x = "Average Temperature (Fahrenheit)",
+     y = "Average Bikes Rented",
+     title = "Temperature and the Bikes Rented",
+     subtitle = "per day")
+
+```
+The data distributions and the linear regression line show a linearity (positive) between "temp" and "count" (first chart).
+
+### Question 3
+
+```{r}
+df_best %>%
+  ggplot(aes(x = residuals))+
+  geom_histogram(fill = "darksalmon",
+                 color = "black",
+                 binwidth = 800)+
+  geom_vline(xintercept = 0, color = 'blue')+
+  labs(x = "Residuals",
+       y = "Count",
+       title = " Nearly Normal Residuals")
+```
+The histogram shows that the distribution of residuals is almost normal. The concentration is close to zero and the remaining data are distributed on both sides.
+
+
+### Question 4
+
+```{r}
+df_best %>%
+  ggplot(aes(x = temp, y = residuals))+
+  geom_point()+
+  labs(x = "Average Temperature (Fahrenheit)",
+       y = "Residuals",
+       title = "Residuals Distribution")+
+  geom_hline(yintercept = 0)+
+  geom_hline(yintercept = 4227, color = 'red')+
+  geom_hline(yintercept = -4227, color = 'red')
+```
+We cannot see any pattern between the "temp" and the residuals, which means that our model is appropriated.
+
+## CONCLUSION
+
+### Question 1
+We can conclude that the model using temperature is the best considering the linear regression method and the available data. There is a positive correlation between rented bike and temperature, the distribution of errors is nearly normal, there is no relationship between the residuals and the exploratory variable, and the model explain 41% of the variability of the response variable. 
+To create a more accurate model, we need new variables, combine variables and/or other regression methods.
+
+
